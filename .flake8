@@ -1,0 +1,2 @@
+[flake8]
+exclude = settings.py,venv,.venv,manage.py

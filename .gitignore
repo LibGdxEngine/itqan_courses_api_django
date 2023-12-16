@@ -1,0 +1,17 @@
+.venv
+.github
+# IntelliJ IDEA files
+.idea/
+
+# Specific IntelliJ IDEA files
+.idea/.gitignore
+.idea/.name
+.idea/app.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+
+ /letaskono/__pycache__
+ /letaskono/__pycache__/
+ /letaskono/__pycache__/*

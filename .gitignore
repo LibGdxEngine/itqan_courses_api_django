@@ -1,9 +1,8 @@
 .venv
-.github
 # IntelliJ IDEA files
 .idea/
 ./idea/*
-
+./
 # Specific IntelliJ IDEA files
 .idea/.gitignore
 .idea/.name
@@ -13,6 +12,7 @@
 .idea/modules.xml
 .idea/vcs.xml
 
- /letaskono/__pycache__
- /letaskono/__pycache__/
- /letaskono/__pycache__/*
+ /itqan_courses/__pycache__
+ /itqan_courses/__pycache__/
+ /itqan_courses/__pycache__/*
+ itqan_courses/

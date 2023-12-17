@@ -2,7 +2,6 @@
 # IntelliJ IDEA files
 .idea/
 ./idea/*
-./
 # Specific IntelliJ IDEA files
 .idea/.gitignore
 .idea/.name

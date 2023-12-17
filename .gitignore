@@ -10,8 +10,7 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
-itqan_courses/__pycache__
-itqan_courses/__pycache__/
-itqan_courses/__pycache__/*
+
 __pycache__/
+**/__pycache__/
 

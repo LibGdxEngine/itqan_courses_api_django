@@ -1,2 +1,2 @@
 [flake8]
-exclude = settings.py,venv,.venv,manage.py
+exclude = settings.py,venv,.venv,manage.py, migrations

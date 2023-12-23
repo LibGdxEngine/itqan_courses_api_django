@@ -1,13 +1,14 @@
 """
 Database models.
 """
-
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
+from django.utils.text import slugify
 
 
 class UserManager(BaseUserManager):
@@ -45,3 +46,54 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
+class Post(models.Model):
+    """Post in the system."""
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+    )
+    title = models.CharField(max_length=500)
+    slug = models.SlugField(max_length=250,
+                            unique_for_date='created_at',
+                            blank=True
+                            )
+    by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='user',
+    )
+    content = models.TextField()
+    read_time_min = models.PositiveSmallIntegerField()
+    status = models.CharField(max_length=10,
+                              choices=STATUS_CHOICES,
+                              default='draft',
+                              )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = models.ManyToManyField('Tag', related_name='tags', blank=False)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = 'Posts'
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+
+class Tag(models.Model):
+    """Tag in the system for filtering posts."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.name

@@ -3,6 +3,7 @@ Tests for models
 """
 
 from django.test import TestCase
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from core import models
 from core.models import User, Tag
@@ -73,3 +74,11 @@ class ModelTests(TestCase):
         tag = Tag.objects.create(user=user, name='testtag')
 
         self.assertEqual(str(tag), tag.name)
+
+    @patch('core.models.uuid.uuid4')
+    def test_post_file_name_uuid(self, mock_uuid4):
+        """Test creating a file name is successful"""
+        uuid = 'test-uuid'
+        mock_uuid4.return_value = uuid
+        file_path = models.post_image_file_path(None, 'myimage.jpg')
+        self.assertEqual(file_path, f'uploads/post/{uuid}.jpg')

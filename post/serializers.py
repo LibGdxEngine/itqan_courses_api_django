@@ -19,7 +19,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'read_time_min', 'status', 'tags']
+        fields = ['id', 'title', 'read_time_min', 'status', 'tags', 'keywords', 'content', 'image']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -37,4 +37,14 @@ class PostDetailSerializer(PostSerializer):
     """Serializer for post objects details in the post app."""
 
     class Meta(PostSerializer.Meta):
-        fields = PostSerializer.Meta.fields + ['content']
+        fields = PostSerializer.Meta.fields + ['content', 'image']
+
+
+class PostImageSerializer(serializers.ModelSerializer):
+    """Serializer for uploading post images in the post app."""
+
+    class Meta:
+        model = Post
+        fields = ['id', 'image']
+        read_only_fields = ['id']
+        extra_kwargs = {'image': {'required': True}}

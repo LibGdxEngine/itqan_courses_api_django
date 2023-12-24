@@ -46,7 +46,7 @@ class UserAdmin(BaseUserAdmin):
 
 class PostAdmin(admin.ModelAdmin):
     """Define admin pages for posts"""
-    list_display = ['title', 'content', 'created_at', 'read_time_min']
+    list_display = ['title', 'content', 'created_at', 'read_time_min', 'image']
     list_filter = ['created_at', 'status', 'by']
     search_fields = ['title', 'content', 'by__email', 'by__name']
     prepopulated_fields = {'slug': ('title',)}

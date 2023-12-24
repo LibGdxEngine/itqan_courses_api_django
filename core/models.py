@@ -1,6 +1,9 @@
 """
 Database models.
 """
+import uuid
+import os
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -9,6 +12,13 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.utils.text import slugify
+
+
+def post_image_file_path(instance, filename):
+    """Generate file path for new image."""
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+    return os.path.join('uploads', 'post', filename)
 
 
 class UserManager(BaseUserManager):
@@ -72,7 +82,9 @@ class Post(models.Model):
                               )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    tags = models.ManyToManyField('Tag', related_name='tags', blank=False)
+    tags = models.ManyToManyField('Tag', related_name='posts', blank=False)
+    keywords = models.TextField()
+    image = models.ImageField(null=True, blank=True, upload_to=post_image_file_path)
 
     class Meta:
         ordering = ['-created_at']

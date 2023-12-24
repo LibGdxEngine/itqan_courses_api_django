@@ -1,3 +1,8 @@
+import tempfile
+import os
+
+from PIL import Image
+
 from unittest import TestCase
 
 from django.contrib.auth import get_user_model
@@ -17,11 +22,17 @@ def detail_url(post_id):
     return reverse("post:post-detail", args=[post_id])
 
 
+def image_upload_url(post_id):
+    """Create & Return image upload URL for post"""
+    return reverse('post:post-upload-image', args=[post_id])
+
+
 def create_post(user, **post_params):
     defaults = {
         'title': 'Test',
         'content': 'Test',
         'read_time_min': 2,
+        'keywords': "keyword1, keyword2",
     }
     defaults.update(post_params)
     return Post.objects.create(by=user, **defaults)
@@ -39,7 +50,6 @@ class PublicPostApiTests(TestCase):
 class PrivatePostApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-
         self.admin_user = get_user_model().objects.create_superuser(
             email="admin_user@example.com",
             password="testpass123",
@@ -71,6 +81,7 @@ class PrivatePostApiTests(TestCase):
             'content': 'Test',
             'read_time_min': 5,
             'status': 'published',
+            'keywords': 'anything',
             'tags': [{'name': 'tag1'}, {'name': 'tag2'}]
         }
         res = self.client.post(POSTS_URL, payload, format='json')
@@ -98,7 +109,8 @@ class PrivatePostApiTests(TestCase):
         payload = {
             'title': 'Test',
             'content': 'Test',
-            'read_time_min': 5
+            'read_time_min': 5,
+            'keywords': 'anything',
         }
         res = self.client.post(POSTS_URL, payload)
 
@@ -185,6 +197,7 @@ class PrivatePostApiTests(TestCase):
             'title': 'Test',
             'content': 'Test',
             'read_time_min': 2,
+            'keywords': 'anything',
             'tags': [{'name': 'tag13'}, {'name': 'tag24'}]
         }
 
@@ -212,6 +225,7 @@ class PrivatePostApiTests(TestCase):
             'title': 'Test',
             'content': 'Test',
             'read_time_min': 6,
+            'keywords': 'anything',
             'tags': [{'name': 'Old tag'}, {'name': 'brand new tag'}]
         }
         self.client.post(POSTS_URL, payload, format='json')
@@ -229,3 +243,75 @@ class PrivatePostApiTests(TestCase):
                 user=self.admin_user
             ).exists()
             self.assertTrue(exists)
+
+    def test_search_posts_by_keyword(self):
+        create_post(user=self.admin_user, keywords='my test keyword')
+
+        res = self.client.get(POSTS_URL, {'search': 'my'})
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 1)
+
+    def test_filter_posts_by_tags(self):
+        """Test filtering posts by tags"""
+        p1 = create_post(user=self.admin_user, title='my test1')
+        p2 = create_post(user=self.admin_user, title='my test2')
+        t1 = Tag.objects.create(user=self.admin_user, name='New1')
+        t2 = Tag.objects.create(user=self.admin_user, name='New2')
+        p1.tags.add(t1)
+        p2.tags.add(t2)
+        p3 = create_post(user=self.admin_user, title='my test3')
+        params = {'tags': f'{t1.id},{t2.id}'}
+        res = self.client.get(POSTS_URL, params)
+
+        s1 = PostSerializer(p1)
+        s2 = PostSerializer(p2)
+        s3 = PostSerializer(p3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+class ImageUploadTests(TestCase):
+    """Test for the Image upload endpoint"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.admin_user = get_user_model().objects.create_superuser(
+            email='admin_user2@gmail.com', password='<PASSWORD>'
+        )
+        self.client.force_authenticate(user=self.admin_user)
+        self.post = create_post(user=self.admin_user, title='Test uploading image title')
+
+    def tearDown(self):
+        self.post.image.delete()
+        self.admin_user.delete()
+
+    def test_upload_image(self):
+        """Test uploading an image"""
+        url = image_upload_url(self.post.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
+            img = Image.new('RGB', size=(10, 10))
+            img.save(image_file, 'JPEG')
+            image_file.seek(0)
+            pyload = {
+                'title': 'Test uploading image title',
+                'read_time_min': 4,
+                'keywords': 'non',
+                'content': 'test content',
+                'image': image_file,
+            }
+            res = self.client.post(url, pyload, format='multipart')
+        self.post.refresh_from_db()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.post.image.path))
+
+    def test_invalid_image(self):
+        """Test uploading an invalid image"""
+        url = image_upload_url(self.post.id)
+        payload = {'image': 'notanimage'}
+
+        res = self.client.post(url, data=payload, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

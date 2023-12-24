@@ -10,7 +10,8 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
-
+.env
+./.env
 __pycache__/
 **/__pycache__/
 

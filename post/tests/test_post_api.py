@@ -271,6 +271,7 @@ class PrivatePostApiTests(TestCase):
         self.assertIn(s2.data, res.data)
         self.assertNotIn(s3.data, res.data)
 
+
 class ImageUploadTests(TestCase):
     """Test for the Image upload endpoint"""
 
@@ -280,7 +281,8 @@ class ImageUploadTests(TestCase):
             email='admin_user2@gmail.com', password='<PASSWORD>'
         )
         self.client.force_authenticate(user=self.admin_user)
-        self.post = create_post(user=self.admin_user, title='Test uploading image title')
+        self.post = create_post(user=self.admin_user,
+                                title='Test uploading image title')
 
     def tearDown(self):
         self.post.image.delete()

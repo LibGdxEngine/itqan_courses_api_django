@@ -20,8 +20,11 @@ from django.conf.urls.static import static
 from django.conf import settings
 from drf_spectacular.views import (SpectacularAPIView, SpectacularSwaggerView)
 
+import core.views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health-check', core.views.health_check, name='health-check'),
     path('api/schema/', SpectacularAPIView.as_view(), name='api-schema'),
     path(
         'api/docs/',
@@ -30,6 +33,7 @@ urlpatterns = [
     ),
     path('api/user/', include('user.urls')),
     path('api/posts/', include('post.urls')),
+
 ]
 
 if settings.DEBUG is True:

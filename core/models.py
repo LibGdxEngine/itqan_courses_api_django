@@ -84,7 +84,9 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', related_name='posts', blank=False)
     keywords = models.TextField()
-    image = models.ImageField(null=True, blank=True, upload_to=post_image_file_path)
+    image = models.ImageField(null=True,
+                              blank=True,
+                              upload_to=post_image_file_path)
 
     class Meta:
         ordering = ['-created_at']
